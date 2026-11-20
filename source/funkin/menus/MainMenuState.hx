@@ -51,7 +51,10 @@ class MainMenuState extends MusicBeatState
 
 		for(bg in [bg, magenta]) {
 			bg.scrollFactor.set(0, 0.18);
-			bg.scale.set(1.15, 1.15);
+			final bgScale = funkin.backend.system.FunkinMobileScaleMode.isAdaptive()
+				? Math.max(1.15, Math.max(FlxG.width / bg.frameWidth, FlxG.height / bg.frameHeight))
+				: 1.15;
+			bg.scale.set(bgScale, bgScale);
 			bg.updateHitbox();
 			bg.screenCenter();
 			bg.antialiasing = true;

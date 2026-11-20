@@ -111,13 +111,13 @@ function postCreate()
     ];
 
     whiteBg = new FlxSprite();
-    whiteBg.makeGraphic(1280, 720, FlxColor.WHITE);
+    whiteBg.makeGraphic(FlxG.width, FlxG.height, FlxColor.WHITE);
     whiteBg.scrollFactor.set(0, 0);
     whiteBg.alpha = 0;
     add(whiteBg);
 
     blackOverlay = new FlxSprite();
-    blackOverlay.makeGraphic(1280, 720, FlxColor.BLACK);
+    blackOverlay.makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
     blackOverlay.scrollFactor.set(0, 0);
     blackOverlay.alpha = 0;
 

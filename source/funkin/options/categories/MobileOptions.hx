@@ -1,6 +1,7 @@
 package funkin.options.categories;
 
 import flixel.input.keyboard.FlxKey;
+import funkin.backend.system.FunkinMobileScaleMode;
 
 class MobileOptions extends TreeMenuScreen
 {
@@ -43,10 +44,23 @@ class MobileOptions extends TreeMenuScreen
 		// add(new ArrayOption(getNameID('hitboxType'), getDescID('hitboxType'), ["No Gradient", "No Gradient (Old)", "Gradient"],
 		// 	["No Gradient", "No Gradient (Old)", "Gradient"], 'hitboxType'));
 		// add(new ArrayOption(getNameID('hitboxMode'), getDescID('hitboxMode'), HitboxModes, HitboxModes, 'hitboxMode'));
+		add(new ArrayOption(getNameID('screenScaleMode'), getDescID('screenScaleMode'),
+			[FunkinMobileScaleMode.ADAPTIVE, FunkinMobileScaleMode.FIT, FunkinMobileScaleMode.STRETCH, FunkinMobileScaleMode.CROP],
+			[getID('screenScaleMode-adaptive'), getID('screenScaleMode-fit'), getID('screenScaleMode-stretch'), getID('screenScaleMode-crop')],
+			'screenScaleMode', (_) -> FunkinMobileScaleMode.apply()));
+		add(new Checkbox(getNameID('screenSafeArea'), getDescID('screenSafeArea'), 'screenSafeArea',
+			() -> FunkinMobileScaleMode.apply()));
+		add(new ArrayOption(getNameID('mobileControlMode'), getDescID('mobileControlMode'), ["hitbox", "official"],
+			[getID('mobileControlMode-hitbox'), getID('mobileControlMode-official')], 'mobileControlMode'));
 		add(new Checkbox(getNameID('hitboxPos'), getDescID('hitboxPos'), "hitboxPos"));
 		add(new NumOption(getNameID('controlsAlpha'), getDescID('controlsAlpha'), 0.0, 1.0, 0.1, "controlsAlpha", (alpha:Float) ->
 		{
-			MusicBeatState.instance.mobileManager.mobilePad.alpha = alpha;
+			if (MusicBeatState.instance != null && MusicBeatState.instance.mobileManager != null) {
+				if (MusicBeatState.instance.mobileManager.mobilePad != null)
+					MusicBeatState.instance.mobileManager.mobilePad.alpha = alpha;
+				if (MusicBeatState.instance.mobileManager.hitbox != null)
+					MusicBeatState.instance.mobileManager.hitbox.alpha = alpha;
+			}
 			if (funkin.backend.system.Controls.instance.mobileC)
 			{
 				FlxG.sound.volumeUpKeys = [];

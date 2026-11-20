@@ -10,6 +10,7 @@ import funkin.backend.scripting.events.NameEvent;
 import funkin.backend.scripting.events.menu.MenuChangeEvent;
 import funkin.backend.scripting.events.menu.pause.*;
 import funkin.backend.system.Conductor;
+import funkin.backend.system.FunkinFullscreenCamera;
 import funkin.backend.utils.FunkinParentDisabler;
 import funkin.editors.charter.Charter;
 import funkin.menus.StoryMenuState;
@@ -39,6 +40,7 @@ class PauseSubState extends MusicBeatSubstate
 	public var game:PlayState = PlayState.instance; // shortcut
 
 	private var __cancelDefault:Bool = false;
+	private var hiddenGameControls:Array<FlxCamera> = [];
 
 	public function new(?items:Array<String>, ?selectCall:NameEvent->Void) {
 		super();
@@ -51,6 +53,13 @@ class PauseSubState extends MusicBeatSubstate
 	{
 		super.create();
 		funkin.backend.utils.VideoPauseUtil.pauseAllForGamePause();
+
+		if (game?.mobileManager != null)
+			for (cam in [game.mobileManager.mobilePadCam, game.mobileManager.hitboxCam])
+				if (cam != null && cam.visible) {
+					hiddenGameControls.push(cam);
+					cam.visible = false;
+				}
 
 		if (menuItems.contains("Exit to charter") && !PlayState.chartingMode)
 			menuItems.remove("Exit to charter");
@@ -78,11 +87,8 @@ class PauseSubState extends MusicBeatSubstate
 
 		if (__cancelDefault = event.cancelled) return;
 
-		var bg:FlxSprite = new FlxSprite().makeSolid(FlxG.width + 100, FlxG.height + 100, FlxColor.BLACK);
-		bg.updateHitbox();
+		var bg:FlxSprite = new FlxSprite().makeSolid(1, 1, FlxColor.BLACK);
 		bg.alpha = 0;
-		bg.screenCenter();
-		bg.scrollFactor.set();
 		add(bg);
 
 		var multiplayerInfo:String = PlayState.opponentMode ? 'pause.opponentMode' :
@@ -98,7 +104,6 @@ class PauseSubState extends MusicBeatSubstate
 
 		for(k=>label in [levelInfo, levelDifficulty, deathCounter, multiplayerText]) {
 			if(label == null) continue;
-			label.scrollFactor.set();
 			label.alpha = 0;
 			label.x = FlxG.width - (label.width + 20);
 			label.y = 15 + (32 * k);
@@ -122,9 +127,16 @@ class PauseSubState extends MusicBeatSubstate
 
 		changeSelection();
 
-		camera = new FlxCamera();
-		camera.bgColor = 0;
-		FlxG.cameras.add(camera, false);
+		final pauseCamera = new FunkinFullscreenCamera(true);
+		camera = pauseCamera;
+		pauseCamera.bgColor = 0;
+		FlxG.cameras.add(pauseCamera, false);
+		pauseCamera.onViewportResize = () -> {
+			bg.scale.set(pauseCamera.width, pauseCamera.height);
+			bg.updateHitbox();
+			bg.setPosition(pauseCamera.x, pauseCamera.y);
+		};
+		pauseCamera.onViewportResize();
 	}
 
 	override function createPost() {
@@ -198,6 +210,10 @@ class PauseSubState extends MusicBeatSubstate
 	}
 	override function destroy()
 	{
+		for (cam in hiddenGameControls)
+			if (FlxG.cameras.list.contains(cam))
+				cam.visible = true;
+
 		if(camera != FlxG.camera && _cameras != null) {
 			if(FlxG.cameras.list.contains(camera))
 				FlxG.cameras.remove(camera, true);

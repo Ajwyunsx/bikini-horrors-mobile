@@ -67,9 +67,7 @@ function postCreate(){
     strumLines.members[4].characters[0].alpha = 0;
     strumLines.members[5].characters[0].alpha = 0;
 
-    blackOverlay = new FlxSprite();
-    blackOverlay.makeGraphic(1280, 720, FlxColor.BLACK);
-    blackOverlay.scrollFactor.set(0, 0);
+    blackOverlay = new FunkinScreenOverlay(FlxColor.BLACK);
     blackOverlay.alpha = 1;
     blackOverlay.cameras = [camHUD];
     add(blackOverlay);
@@ -374,9 +372,7 @@ function stepHit(curStep:Int) {
             pixelBasement.alpha = 0;
             pixelEvil.alpha = 1;
         case 2250:
-            whiteOverlay = new FlxSprite();
-            whiteOverlay.makeGraphic(1280, 720, FlxColor.WHITE);
-            whiteOverlay.scrollFactor.set(0, 0);
+            whiteOverlay = new FunkinScreenOverlay(FlxColor.WHITE);
             whiteOverlay.alpha = 0;
             whiteOverlay.cameras = [camHUD];
             add(whiteOverlay);

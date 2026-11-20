@@ -1,3 +1,5 @@
+import funkin.backend.system.FunkinFullscreenCamera;
+import funkin.backend.system.FunkinMobileScaleMode;
 // Script by Chezzar
 import funkin.backend.MusicBeatState;
 import funkin.menus.credits.CreditsMain;
@@ -113,6 +115,8 @@ function create() {
     bgArt.alpha = 0;
     bgArt.updateHitbox();
     bgArt.camera = bgCam;
+    if (FunkinMobileScaleMode.isAdaptive())
+        FunkinFullscreenCamera.layoutSprite(bgArt, FlxG.width, FlxG.height, true);
     add(bgArt);
 
     FlxTween.tween(bgArt, {alpha: 0.7}, 6.2, {ease: FlxEase.quartOut});

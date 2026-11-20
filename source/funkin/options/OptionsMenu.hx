@@ -130,15 +130,16 @@ class OptionsMenu extends TreeMenu {
 	}
 
 	public function updateBG() {
-		var scaleX:Float = FlxG.width / bg.width;
-		var scaleY:Float = FlxG.height / bg.height;
+		var scaleX:Float = FlxG.width / bg.frameWidth;
+		var scaleY:Float = FlxG.height / bg.frameHeight;
 		bg.scale.x = bg.scale.y = Math.max(scaleX, scaleY) * 1.15;
+		bg.updateHitbox();
 		bg.screenCenter();
 	}
 
 	override function onResize(width:Int, height:Int) {
 		super.onResize(width, height);
-		if (!UIState.resolutionAware) return;
+		if (bg == null || (!UIState.resolutionAware && !FlxG.onMobile)) return;
 
 		updateBG();
 	}

@@ -4,6 +4,10 @@ import flixel.FlxState;
 import flixel.FlxSubState;
 import flixel.graphics.FlxGraphic;
 import flixel.math.FlxPoint;
+#if mobile
+import flixel.math.FlxRect;
+import funkin.backend.system.FunkinMobileScaleMode;
+#end
 import flixel.sound.FlxSound;
 import flixel.text.FlxText;
 import flixel.tweens.FlxTween;
@@ -153,7 +157,7 @@ class PlayState extends MusicBeatState
 	 */
 	public var downscroll(get, set):Bool;
 
-	private inline function set_downscroll(v:Bool) return camHUD.downscroll = v;
+	private inline function set_downscroll(v:Bool) return camHUD.downscroll = usesOfficialMobileControls() ? true : v;
 	private inline function get_downscroll():Bool return camHUD.downscroll;
 
 	/**
@@ -320,6 +324,9 @@ class PlayState extends MusicBeatState
 	 * Camera for the game (stages, characters).
 	 */
 	public var camGame:FlxCamera;
+	#if mobile
+	private var mobileSceneExtension:FlxRect = new FlxRect();
+	#end
 
 	/**
 	 * The player's current score.
@@ -675,6 +682,18 @@ class PlayState extends MusicBeatState
 		return event;
 	}
 
+	public inline function usesOfficialMobileControls():Bool
+		return Options.mobileControlMode == mobile.objects.FunkinHitbox.OFFICIAL_MODE;
+
+	private inline function getGameplayHitboxMode():String
+		return usesOfficialMobileControls() ? mobile.objects.FunkinHitbox.OFFICIAL_MODE : Options.hitboxMode;
+
+	private inline function setMobileHitboxVisible(visible:Bool):Void
+	{
+		if (mobileManager != null && mobileManager.hitbox != null)
+			mobileManager.hitbox.visible = visible;
+	}
+
 	@:dox(hide) override public function create()
 	{
 		__createStartedAt = Timer.stamp();
@@ -692,11 +711,14 @@ class PlayState extends MusicBeatState
 
 		camGame = camera;
 		camGame.bgColor = FlxColor.BLACK;
+		#if mobile
+		updateMobileSceneViewport();
+		#end
 		FlxG.cameras.add(camHUD = new HudCamera(), false);
 		camHUD.bgColor.alpha = 0;
 
 		downscroll = Options.downscroll;
-		middlescroll = Options.middlescroll;
+		middlescroll = Options.middlescroll && !usesOfficialMobileControls();
 
 		persistentUpdate = true;
 		persistentDraw = true;
@@ -918,14 +940,15 @@ class PlayState extends MusicBeatState
 			e.cameras = [camHUD];
 		#end
 
-		addHitbox();
+		addHitbox(getGameplayHitboxMode(), true);
 		addMobilePad('NONE', 'P');
-		mobileManager.hitbox.visible = false;
-		mobileManager.hitbox.forEachAlive((button) ->
-		{
-			if (getMobilePadButton("buttonP") != null)
-				button.deadZones.push(getMobilePadButton("buttonP"));
-		});
+		setMobileHitboxVisible(false);
+		if (mobileManager.hitbox != null)
+			mobileManager.hitbox.forEachAlive((button) ->
+			{
+				if (getMobilePadButton("buttonP") != null)
+					button.deadZones.push(getMobilePadButton("buttonP"));
+			});
 
 		startingSong = true;
 
@@ -951,6 +974,40 @@ class PlayState extends MusicBeatState
 
 		Logs.infos('PlayState.create() finished in ${Std.int((Timer.stamp() - __createStartedAt) * 1000)}ms', "PlayState");
 	}
+
+	#if mobile
+	public override function onResize(width:Int, height:Int) {
+		updateMobileSceneViewport();
+		super.onResize(width, height);
+		mobileManager?.resizeGameplayControls();
+	}
+
+	private function updateMobileSceneViewport():Void {
+		if (camGame == null || camGame.scroll == null)
+			return;
+
+		final extension = FlxRect.get();
+		final scaleMode = Std.downcast(FlxG.scaleMode, FunkinMobileScaleMode);
+		if (scaleMode != null)
+			scaleMode.getSceneExtension(extension);
+
+		final addedWidth = Std.int(extension.width - mobileSceneExtension.width);
+		final addedHeight = Std.int(extension.height - mobileSceneExtension.height);
+		final dx = extension.x - mobileSceneExtension.x;
+		final dy = extension.y - mobileSceneExtension.y;
+		mobileSceneExtension.copyFrom(extension);
+		extension.put();
+
+		if (addedWidth == 0 && addedHeight == 0 && dx == 0 && dy == 0)
+			return;
+
+		// Preserve the world point at the camera's center as the visible area changes.
+		camGame.setSize(camGame.width + addedWidth, camGame.height + addedHeight);
+		camGame.setPosition(camGame.x + dx, camGame.y + dy);
+		camGame.scroll.add(-addedWidth * 0.5, -addedHeight * 0.5);
+		@:privateAccess camGame._scrollTarget.add(-addedWidth * 0.5, -addedHeight * 0.5);
+	}
+	#end
 
 	@:dox(hide) public override function createPost() {
 		startCutscene("", cutscene, null, true);
@@ -1120,7 +1177,7 @@ class PlayState extends MusicBeatState
 	@:dox(hide) function startSong():Void
 	{
 		gameAndCharsCall("onSongStart");
-		mobileManager.hitbox.visible = true;
+		setMobileHitboxVisible(true);
 		startingSong = false;
 
 		inst.onComplete = endSong;
@@ -1235,6 +1292,11 @@ class PlayState extends MusicBeatState
 	}
 
 	public function applyMiddlescrollPositions(force:Bool = false):Void {
+		if (usesOfficialMobileControls()) {
+			applyOfficialMobileStrumLayout();
+			return;
+		}
+
 		if (!middlescroll)
 			return;
 
@@ -1285,6 +1347,57 @@ class PlayState extends MusicBeatState
 
 			strum.x = startX + spacing * i;
 			strum.y = targetY;
+		}
+	}
+
+	private function applyOfficialMobileStrumLayout():Void
+	{
+		downscroll = true;
+
+		var line = playerStrums;
+		if (line == null || line.members == null || line.members.length <= 0)
+			return;
+
+		for (strumLine in strumLines.members)
+			if (strumLine != null && strumLine != line && strumLine.cpu) {
+				strumLine.visible = true;
+				for (strum in strumLine.members)
+					if (strum != null)
+						strum.visible = false;
+				if (strumLine.notes != null)
+					strumLine.notes.visible = true;
+			}
+
+		line.visible = true;
+		if (line.notes != null)
+			line.notes.visible = true;
+
+		var count = line.members.length;
+		var hintWidth:Float = mobile.objects.FunkinHitbox.getOfficialHintWidth();
+		var hintHeight:Float = mobile.objects.FunkinHitbox.getOfficialHintHeight();
+		var officialScale:Float = mobile.objects.FunkinHitbox.OFFICIAL_STRUM_SCALE
+			* funkin.backend.system.FunkinMobileScaleMode.getGameplayControlScale();
+		var yPos:Float = mobile.objects.FunkinHitbox.getOfficialHintY();
+
+		for (i in 0...count) {
+			var strum = line.members[i];
+			if (strum == null)
+				continue;
+
+			if (strum.frameWidth > 0) {
+				var targetWidth:Int = Std.int(strum.frameWidth * Flags.DEFAULT_NOTE_SCALE * line.strumScale * officialScale);
+				if (targetWidth > 0 && Std.int(strum.width) != targetWidth) {
+					strum.setGraphicSize(targetWidth);
+					strum.updateHitbox();
+				}
+			}
+
+			var hintX:Float = mobile.objects.FunkinHitbox.getOfficialHintX(i, count);
+			var screenY:Float = yPos + ((hintHeight - strum.height) * 0.5);
+			var hudHeight:Float = camHUD != null ? camHUD.layoutHeight : FlxG.height;
+			strum.visible = true;
+			strum.x = hintX + ((hintWidth - strum.width) * 0.5);
+			strum.y = downscroll ? hudHeight - screenY - strum.height : screenY;
 		}
 	}
 
@@ -1623,6 +1736,7 @@ class PlayState extends MusicBeatState
 
 	override function draw() {
 		var e = scripts.event("draw", EventManager.get(DrawEvent).recycle());
+		applyMiddlescrollPositions();
 		if (!e.cancelled)
 			super.draw();
 		scripts.event("postDraw", e);
@@ -1982,10 +2096,10 @@ class PlayState extends MusicBeatState
 	public function endSong():Void
 	{
 		if (gameAndCharsEvent("onSongEnd", new CancellableEvent()).cancelled) return;
-		mobileManager.hitbox.visible = false;
+		setMobileHitboxVisible(false);
 		endingSong = true;
 		canPause = false;
-		mobileManager.hitbox.visible = false;
+		setMobileHitboxVisible(false);
 
 		for (strumLine in strumLines.members) strumLine.vocals.stop();
 		inst.stop();
@@ -2019,7 +2133,7 @@ class PlayState extends MusicBeatState
 	 * Immediately switches to the next song, or goes back to the Story/Freeplay menu.
 	 */
 	public function nextSong() {
-		mobileManager.hitbox.visible = false;
+		setMobileHitboxVisible(false);
 		if (isStoryMode) {
 			campaignScore += songScore;
 			campaignMisses += misses;

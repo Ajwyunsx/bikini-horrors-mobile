@@ -41,9 +41,7 @@ function postCreate()
     add(screenVignette);
     screenVignette.cameras = [camHUD];
     
-    whiteOverlay = new FlxSprite();
-    whiteOverlay.makeGraphic(1280, 720, FlxColor.WHITE);
-    whiteOverlay.scrollFactor.set(0, 0);
+    whiteOverlay = new FunkinScreenOverlay(FlxColor.WHITE);
     whiteOverlay.scale.x = 5;
     whiteOverlay.scale.y = 5;
     whiteOverlay.alpha = 1;
@@ -121,9 +119,7 @@ function postCreate()
     pinkFilter.alpha = 0;
     add(pinkFilter);
 
-    blackOverlay = new FlxSprite();
-    blackOverlay.makeGraphic(1280, 720, FlxColor.BLACK);
-    blackOverlay.scrollFactor.set(0, 0);
+    blackOverlay = new FunkinScreenOverlay(FlxColor.BLACK);
     blackOverlay.alpha = 1;
     blackOverlay.cameras = [camHUD];
     add(blackOverlay);

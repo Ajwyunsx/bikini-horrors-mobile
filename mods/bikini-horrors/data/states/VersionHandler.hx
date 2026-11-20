@@ -8,7 +8,7 @@ var changedState:Bool = false;
 
 function create() {
     var bg:FlxSprite = new FlxSprite();
-    bg.makeGraphic(1280, 720, FlxColor.BLACK);
+    bg.makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
     add(bg);
 
     if (FlxG.save.data.selectedVersion != null) {

@@ -66,9 +66,7 @@ function postCreate() {
             }
         );
 
-        blackOverlay = new FlxSprite();
-        blackOverlay.makeGraphic(1280, 720, FlxColor.BLACK);
-        blackOverlay.scrollFactor.set(0, 0);
+        blackOverlay = new FunkinScreenOverlay(FlxColor.BLACK);
         blackOverlay.alpha = 1;
         blackOverlay.cameras = [camHUD];
         add(blackOverlay);

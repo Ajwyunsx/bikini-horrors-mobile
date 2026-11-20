@@ -5,6 +5,7 @@ import flixel.addons.display.FlxBackdrop;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
 import funkin.backend.FunkinText;
+import funkin.backend.system.FunkinFullscreenCamera;
 import haxe.Int64;
 import haxe.io.FPHelper;
 import haxe.io.Path;
@@ -29,6 +30,7 @@ class VideoCutscene extends Cutscene {
 	final mutex = new sys.thread.Mutex();
 
 	var cutsceneCamera:FlxCamera;
+	var videoCamera:FunkinFullscreenCamera;
 
 	var text:FunkinText;
 	var loadingBackdrop:FlxBackdrop;
@@ -52,6 +54,9 @@ class VideoCutscene extends Cutscene {
 		// TODO: get vlc to stop autoloading those goddamn subtitles (use different file ext??)
 
 		#if VIDEO_CUTSCENES
+		videoCamera = new FunkinFullscreenCamera();
+		videoCamera.bgColor = 0xFF000000;
+		FlxG.cameras.add(videoCamera, false);
 		cutsceneCamera = new FlxCamera();
 		cutsceneCamera.bgColor = 0;
 		FlxG.cameras.add(cutsceneCamera, false);
@@ -59,19 +64,14 @@ class VideoCutscene extends Cutscene {
 		parseSubtitles();
 
 		add(video = new FlxVideoSprite());
+		video.cameras = [videoCamera];
 		video.antialiasing = true;
 		#if (hxvlc < version("2.0.0"))
 		video.autoPause = false;  // Imma handle it better inside this class, mainly because of the pause menu  - Nex
 		#end
 		video.bitmap.onEndReached.add(close);
-		video.bitmap.onFormatSetup.add(function() if (video.bitmap != null && video.bitmap.bitmapData != null) {
-			final width = video.bitmap.bitmapData.width;
-			final height = video.bitmap.bitmapData.height;
-			final scale:Float = Math.min(FlxG.width / width, FlxG.height / height);
-			video.setGraphicSize(Std.int(width * scale), Std.int(height * scale));
-			video.updateHitbox();
-			video.screenCenter();
-		});
+		videoCamera.onViewportResize = layoutVideo;
+		video.bitmap.onFormatSetup.add(layoutVideo);
 
 		//cover = new FlxSprite(0, FlxG.height * 0.85).makeSolid(FlxG.width + 50, FlxG.height + 50, 0xFF000000);
 		//cover.scrollFactor.set(0, 0);
@@ -119,6 +119,11 @@ class VideoCutscene extends Cutscene {
 	}
 
 	#if VIDEO_CUTSCENES
+	private function layoutVideo():Void {
+		if (video?.bitmap?.bitmapData != null)
+			videoCamera.layoutMedia(video);
+	}
+
 	public function parseSubtitles() {
 		var subtitlesPath = '${Path.withoutExtension(path)}.srt';
 
@@ -244,6 +249,7 @@ class VideoCutscene extends Cutscene {
 
 	public override function destroy() {
 		FlxG.cameras.remove(cutsceneCamera, true);
+		FlxG.cameras.remove(videoCamera, true);
 		video.destroy();
 		super.destroy();
 	}

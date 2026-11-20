@@ -25,7 +25,11 @@ class Options
 	public static var storageType:String = "EXTERNAL_DATA";
 	public static var controlsAlpha:Float = FlxG.onMobile ? 0.6 : 0;
 	public static var hitboxType:String = "Gradient";
+	public static var mobileControlMode:String = "hitbox";
 	public static var hitboxMode:String = 'Normal';
+	public static var screenScaleMode:String = funkin.backend.system.FunkinMobileScaleMode.ADAPTIVE;
+	public static var screenSafeArea:Bool = true;
+	private static var screenScaleMigrated:Bool = false;
 	public static var mobileExtraKeyReturns:Array<String> = ['SPACE', 'SHIFT', 'Q', 'E'];
 
 	/**
@@ -221,6 +225,13 @@ class Options
 		if (__save == null) __save = new FlxSave();
 		__save.bind(name, path);
 		__load();
+		#if mobile
+		if (!screenScaleMigrated) {
+			if (screenScaleMode == funkin.backend.system.FunkinMobileScaleMode.STRETCH)
+				screenScaleMode = funkin.backend.system.FunkinMobileScaleMode.ADAPTIVE;
+			screenScaleMigrated = true;
+		}
+		#end
 		extraButtons = 0;
 
 		if (!__eventAdded) {
@@ -251,6 +262,7 @@ class Options
 		#if mobile
 		framerate = funkin.backend.system.MobilePerformance.sanitizeUserFramerate(framerate);
 		funkin.backend.system.MobilePerformance.apply(true);
+		funkin.backend.system.FunkinMobileScaleMode.apply();
 		#else
 		if (FlxG.updateFramerate < framerate) FlxG.drawFramerate = FlxG.updateFramerate = framerate;
 		else FlxG.updateFramerate = FlxG.drawFramerate = framerate;

@@ -7,6 +7,10 @@ import mobile.MobilePad;
 import mobile.Hitbox;
 import mobile.JoyStick;
 import flixel.FlxBasic;
+import flixel.math.FlxRect;
+import funkin.backend.system.FunkinFullscreenCamera;
+import funkin.backend.system.FunkinMobileScaleMode;
+import funkin.game.PlayState;
 
 /**
  * A simple mobile manager for who doesn't want to create these manually
@@ -61,10 +65,13 @@ class MobileControlManager implements IFlxDestroyable {
 
 	public function addMobilePadCamera(defaultDrawTarget:Bool = false):Void
 	{
-		mobilePadCam = new FlxCamera();
+		mobilePadCam = createControlCamera();
 		mobilePadCam.bgColor.alpha = 0;
 		FlxG.cameras.add(mobilePadCam, defaultDrawTarget);
 		mobilePad.cameras = [mobilePadCam];
+		if (mobilePadCam is FunkinFullscreenCamera)
+			mobilePad.scrollFactor.set(1, 1);
+		resizeGameplayControls();
 	}
 
 	public function makeHitbox(?mode:String, ?hints:Bool)
@@ -105,10 +112,30 @@ class MobileControlManager implements IFlxDestroyable {
 
 	public function addHitboxCamera(defaultDrawTarget:Bool = false):Void
 	{
-		hitboxCam = new FlxCamera();
+		hitboxCam = createControlCamera();
 		hitboxCam.bgColor.alpha = 0;
 		FlxG.cameras.add(hitboxCam, defaultDrawTarget);
 		hitbox.cameras = [hitboxCam];
+		if (hitboxCam is FunkinFullscreenCamera)
+			hitbox.scrollFactor.set(1, 1);
+		resizeGameplayControls();
+	}
+
+	private function createControlCamera():FlxCamera
+		return FlxG.onMobile && (curState is PlayState) ? new FunkinFullscreenCamera(true) : new FlxCamera();
+
+	public function resizeGameplayControls():Void
+	{
+		if (!(hitboxCam is FunkinFullscreenCamera) && !(mobilePadCam is FunkinFullscreenCamera))
+			return;
+
+		final viewport = FlxRect.get();
+		FunkinMobileScaleMode.getControlViewport(viewport);
+		if (hitboxCam is FunkinFullscreenCamera)
+			hitbox?.resizeToViewport(viewport);
+		if (mobilePadCam is FunkinFullscreenCamera)
+			mobilePad?.resizeGameplayPause(viewport, FunkinMobileScaleMode.getGameplayControlScale());
+		viewport.put();
 	}
 
 	public function makeJoyStick(x:Float = 0, y:Float = 0, ?graphic:String, ?onMove:Float->Float->Float->String->Void, size:Float = 1):Void

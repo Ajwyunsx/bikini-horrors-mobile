@@ -1,3 +1,4 @@
+import funkin.backend.system.FunkinFullscreenCamera;
 import haxe.Json;
 import flixel.FlxG;
 import flixel.FlxCamera;
@@ -28,7 +29,7 @@ function create(event) {
     event.cancel();
     cameras = [];
     
-    starvedCam = new FlxCamera();
+    starvedCam = new FunkinFullscreenCamera(true);
     starvedCam.bgColor = 0xC2000000;
     starvedCam.pixelPerfectRender = true;
     FlxG.cameras.add(starvedCam, false);

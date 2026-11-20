@@ -31,7 +31,7 @@ function create() {
     var aika = stage.getSprite("aika");
     tent.playAnim("idle");
     aika.playAnim("idle");
-    FlxG.cameras.add(mechanicsCam = new FlxCamera(), false);
+    FlxG.cameras.add(mechanicsCam = new HudCamera(), false);
     mechanicsCam.bgColor = 0x00000000;
     failLoop = FlxG.sound.load(Paths.sound('tinnitus'), 0, true); 
     failLoop.play();
@@ -76,16 +76,12 @@ function postCreate() {
     add(screenVignette);
     screenVignette.cameras = [camHUD];
 
-    blackOverlay = new FlxSprite();
-    blackOverlay.makeGraphic(1280, 720, FlxColor.BLACK);
-    blackOverlay.scrollFactor.set(0, 0);
+    blackOverlay = new FunkinScreenOverlay(FlxColor.BLACK);
     blackOverlay.alpha = 1;
     blackOverlay.cameras = [camHUD];
     add(blackOverlay);
 
-    whiteOverlay = new FlxSprite();
-    whiteOverlay.makeGraphic(1280, 720, FlxColor.WHITE);
-    whiteOverlay.scrollFactor.set(0, 0);
+    whiteOverlay = new FunkinScreenOverlay(FlxColor.WHITE);
     whiteOverlay.alpha = 0;
     whiteOverlay.cameras = [mechanicsCam];
     add(whiteOverlay);
@@ -387,4 +383,3 @@ function stepHit(curStep:Int) {
     }
 
 }
-

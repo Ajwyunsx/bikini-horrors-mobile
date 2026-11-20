@@ -110,9 +110,7 @@ function postCreate()
     slotChar = strumLines.members[3].characters[0];
     wheelChar = strumLines.members[2].characters[0];
 
-    blackOverlay = new FlxSprite();
-    blackOverlay.makeGraphic(1280, 720, FlxColor.BLACK);
-    blackOverlay.scrollFactor.set(0, 0);
+    blackOverlay = new FunkinScreenOverlay(FlxColor.BLACK);
     blackOverlay.alpha = 1;
     blackOverlay.cameras = [camHUD];
     add(blackOverlay);

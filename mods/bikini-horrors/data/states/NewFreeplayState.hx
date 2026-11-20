@@ -226,7 +226,7 @@ function create() {
     }
 
     whiteBg = new FlxSprite();
-    whiteBg.makeGraphic(1280, 720, FlxColor.WHITE);
+    whiteBg.makeGraphic(FlxG.width, FlxG.height, FlxColor.WHITE);
     whiteBg.scrollFactor.set(0, 0);
     whiteBg.alpha = 0;
     add(whiteBg);
@@ -325,7 +325,7 @@ function create() {
 
 function postCreate() {
     blackOverlay = new FlxSprite();
-    blackOverlay.makeGraphic(1280, 720, FlxColor.BLACK);
+    blackOverlay.makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
     blackOverlay.scrollFactor.set(0, 0);
 
     group.y = group.y - 40;
@@ -525,7 +525,7 @@ function update(elapsed:Float) {
                 onComplete: function(_)
                 {
                     var fadeBlock = new FlxSprite();
-                    fadeBlock.makeGraphic(1280, 720, FlxColor.BLACK);
+                    fadeBlock.makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
                     fadeBlock.scrollFactor.set(0, 0);
                     fadeBlock.cameras = [FlxG.camera];
                     fadeBlock.alpha = 1;

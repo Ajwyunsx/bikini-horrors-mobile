@@ -7,7 +7,7 @@ import funkin.backend.scripting.events.CancellableEvent;
 import funkin.backend.scripting.events.ResizeEvent;
 import funkin.backend.scripting.events.TransitionCreationEvent;
 import funkin.backend.utils.FunkinParentDisabler;
-import funkin.editors.ui.UIState;
+import funkin.backend.system.FunkinFullscreenCamera;
 
 class MusicBeatTransition extends MusicBeatSubstate {
 	public static var script:String = Flags.DEFAULT_TRANSITION_SCRIPT;
@@ -33,7 +33,8 @@ class MusicBeatTransition extends MusicBeatSubstate {
 		if (newState != null)
 			add(new FunkinParentDisabler(true, false));
 
-		transitionCamera = new FlxCamera();
+		final fullscreenCamera = new FunkinFullscreenCamera();
+		transitionCamera = fullscreenCamera;
 		transitionCamera.bgColor = 0;
 		FlxG.cameras.add(transitionCamera, false);
 
@@ -58,6 +59,7 @@ class MusicBeatTransition extends MusicBeatSubstate {
 		blackSpr.color = 0xFF000000;
 		add(transitionSprite = new FunkinSprite().loadSprite(Paths.image('menus/transitionSpr')));
 		resizeDefaultSprites();
+		fullscreenCamera.onViewportResize = resizeDefaultSprites;
 
 		transitionCamera.flipY = !transOut;
 		transitionCamera.scroll.y = transitionCamera.height;
@@ -103,7 +105,6 @@ class MusicBeatTransition extends MusicBeatSubstate {
 
 	public override function onResize(w:Int, h:Int) {
 		super.onResize(w, h);
-		if (FlxG.state is UIState && UIState.resolutionAware) resizeDefaultSprites();
 		transitionScript.call('onResize', [EventManager.get(ResizeEvent).recycle(w, h, null, null)]);
 	}
 

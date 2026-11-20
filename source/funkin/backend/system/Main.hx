@@ -144,6 +144,7 @@ class Main extends Sprite
 		FlxG.fixedTimestep = false;
 
 		if (!funkin.backend.system.Controls.instance.mobileC) FlxG.scaleMode = scaleMode = new FunkinRatioScaleMode();
+		else FunkinMobileScaleMode.apply();
 
 		Conductor.init();
 		AudioSwitchFix.init();

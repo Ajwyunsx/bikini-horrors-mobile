@@ -1,3 +1,5 @@
+import funkin.backend.system.FunkinFullscreenCamera;
+import funkin.backend.system.FunkinMobileScaleMode;
 import hxvlc.flixel.FlxVideoSprite;
 
 
@@ -15,9 +17,13 @@ function startVideo(name:String) {
     add(vid);
 
     vid.bitmap.onFormatSetup.add(function() {
-        vid.setGraphicSize(FlxG.width, FlxG.height);
-        vid.updateHitbox();
-        vid.screenCenter();
+        if (FunkinMobileScaleMode.isAdaptive())
+            FunkinFullscreenCamera.layoutSprite(vid, FlxG.width, FlxG.height, true);
+        else {
+            vid.setGraphicSize(FlxG.width, FlxG.height);
+            vid.updateHitbox();
+            vid.screenCenter();
+        }
     });
 
     if (vid.load(Paths.video(name, ext))) {

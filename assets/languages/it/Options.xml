@@ -99,6 +99,19 @@
 		</group>
 	</group>
 	<group name="MobileOptions" prefix="MobileOptions.">
+		<str id="mobileControlMode-name">Mobile Controls</str>
+		<str id="mobileControlMode-desc">Switch gameplay touch controls between the hitbox and the V-Slice official arrows layout.</str>
+		<str id="mobileControlMode-hitbox">Hitbox</str>
+		<str id="mobileControlMode-official">Official</str>
+		<str id="screenScaleMode-name">Screen Scale</str>
+		<str id="screenScaleMode-desc">Adaptive adjusts menus, cutscenes and the stage to the display while keeping their proportions. Fit shows the full 16:9 view. Stretch fills the screen by resizing both axes. Crop zooms in to fill the screen.</str>
+		<str id="screenScaleMode-adaptive">Adaptive</str>
+		<str id="screenScaleMode-fit">Fit</str>
+		<str id="screenScaleMode-stretch">Stretch</str>
+		<str id="screenScaleMode-crop">Crop</str>
+		<str id="screenSafeArea-name">Screen Safe Area</str>
+		<str id="screenSafeArea-desc">Keep text and touch controls clear of the camera cutout and rounded or curved edges.</str>
+
 		<str id="extraButtons-name">Pulsanti Extra</str>
 		<str id="extraButtons-desc">Seleziona quanti pulsanti extra preferisci avere sull'hitbox.</str>
 

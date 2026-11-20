@@ -1,3 +1,5 @@
+import funkin.backend.system.FunkinFullscreenCamera;
+import funkin.backend.system.FunkinMobileScaleMode;
 // Script by Aika
 import hxvlc.flixel.FlxVideoSprite;
 import flixel.FlxG;
@@ -9,11 +11,18 @@ import funkin.backend.utils.VideoPauseUtil;
 
 public var currentVid:FlxVideoSprite;
 var vidList:Map<String, FlxVideoSprite> = [];
-var camVideo:FlxCamera;
+var camVideo:FunkinFullscreenCamera;
 
 function postCreate() {
-    camVideo = new FlxCamera();
-    camVideo.bgColor = 0; 
+    camVideo = new FunkinFullscreenCamera();
+    camVideo.visible = false;
+    camVideo.onViewportResize = function() {
+        camVideo.bgColor = FunkinMobileScaleMode.isAdaptive() ? 0xFF000000 : 0;
+        for (v in vidList)
+            if (v.bitmap != null && v.bitmap.bitmapData != null)
+                camVideo.layoutMedia(v);
+    };
+    camVideo.onViewportResize();
     FlxG.cameras.insert(camVideo, FlxG.cameras.list.indexOf(camHUD), false);
 
     for (event in PlayState.SONG.events) {
@@ -28,18 +37,8 @@ function postCreate() {
             v.scrollFactor.set(0, 0);
             
             v.bitmap.onFormatSetup.add(function():Void {
-                if (v.bitmap != null && v.bitmap.bitmapData != null) {
-                    var scale:Float = Math.min(
-                        FlxG.width / v.bitmap.bitmapData.width,
-                        FlxG.height / v.bitmap.bitmapData.height
-                    );
-                    v.setGraphicSize(
-                        v.bitmap.bitmapData.width * scale,
-                        v.bitmap.bitmapData.height * scale
-                    );
-                    v.updateHitbox();
-                    v.screenCenter();
-                }
+                if (v.bitmap != null && v.bitmap.bitmapData != null)
+                    camVideo.layoutMedia(v);
             });
 
             v.visible = false;
@@ -54,6 +53,7 @@ function postCreate() {
 }
 
 function onVideoEnd():Void {
+    camVideo.visible = false;
     if (currentVid != null) {
         currentVid.visible = false;
         currentVid.stop();
@@ -70,12 +70,15 @@ function onEvent(event) {
             currentVid.bitmap.onEndReached.remove(onVideoEnd);
             currentVid.stop();
             currentVid.visible = false;
+            currentVid = null;
+            camVideo.visible = false;
         }
 
         var v = vidList.get(vidName);
         if (v == null) return;
 
         currentVid = v;
+        camVideo.visible = true;
         currentVid.visible = true;
         currentVid.bitmap.onEndReached.add(onVideoEnd);
         

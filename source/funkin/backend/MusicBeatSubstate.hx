@@ -310,6 +310,7 @@ class MusicBeatSubstate extends FlxSubState implements IBeatCancellableReceiver
 
 	public override function onResize(w:Int, h:Int) {
 		super.onResize(w, h);
+		mobileManager?.mobilePad?.resizeToViewport();
 		event("onResize", EventManager.get(ResizeEvent).recycle(w, h, null, null));
 	}
 

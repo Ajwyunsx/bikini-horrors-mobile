@@ -88,9 +88,7 @@ function postCreate() {
     iconP2.visible = false;
     defaultCamZoom = 0.8;
     camGame.zoom = defaultCamZoom;
-    blackOverlay = new FlxSprite();
-    blackOverlay.makeGraphic(1280, 720, FlxColor.BLACK);
-    blackOverlay.scrollFactor.set(0, 0);
+    blackOverlay = new FunkinScreenOverlay(FlxColor.BLACK);
     blackOverlay.alpha = 1;
     blackOverlay.cameras = [blackCam];
     add(blackOverlay);
@@ -437,4 +435,3 @@ function comboVisibility(val:Bool, tween:Bool = false){
             }
         }
 }
-

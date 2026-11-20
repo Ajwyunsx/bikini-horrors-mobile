@@ -1,3 +1,5 @@
+import funkin.backend.system.FunkinFullscreenCamera;
+import funkin.backend.system.FunkinMobileScaleMode;
 import funkin.backend.week.Week;
 import flixel.util.FlxColor;
 import hxvlc.flixel.FlxVideoSprite;
@@ -99,7 +101,7 @@ function create() {
     
 
     blackOverlay = new FlxSprite();
-    blackOverlay.makeGraphic(1280, 720, FlxColor.BLACK);
+    blackOverlay.makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
     blackOverlay.scrollFactor.set(0, 0);
     blackOverlay.alpha = 1;
     add(blackOverlay);
@@ -140,9 +142,13 @@ function startRandomLoopVideo(name:String)
 
     vid.bitmap.onFormatSetup.add(function()
     {
-        vid.setGraphicSize(FlxG.width, FlxG.height);
-        vid.updateHitbox();
-        vid.screenCenter();
+        if (FunkinMobileScaleMode.isAdaptive())
+            FunkinFullscreenCamera.layoutSprite(vid, FlxG.width, FlxG.height, true);
+        else {
+            vid.setGraphicSize(FlxG.width, FlxG.height);
+            vid.updateHitbox();
+            vid.screenCenter();
+        }
     });
 
     if (vid.load(Paths.video(name, ext)))
@@ -281,9 +287,13 @@ function startVideo(name:String) {
     add(vid);
 
     vid.bitmap.onFormatSetup.add(function() {
-        vid.setGraphicSize(FlxG.width, FlxG.height);
-        vid.updateHitbox();
-        vid.screenCenter();
+        if (FunkinMobileScaleMode.isAdaptive())
+            FunkinFullscreenCamera.layoutSprite(vid, FlxG.width, FlxG.height, true);
+        else {
+            vid.setGraphicSize(FlxG.width, FlxG.height);
+            vid.updateHitbox();
+            vid.screenCenter();
+        }
     });
 
     if (vid.load(Paths.video(name, ext))) {
